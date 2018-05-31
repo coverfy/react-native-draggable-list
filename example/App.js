@@ -9,40 +9,98 @@ const styles = StyleSheet.create({
   },
   text: {
     marginTop: 30
+  },
+  lastItemContainer: {
+    flex: 1,
+    marginVertical: 10,
+    marginHorizontal: 10,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  wrapAdd: {
+    width: 50,
+    height: 50,
+    backgroundColor: "green",
+    marginVertical: 10,
+    marginHorizontal: 10,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  add: {
+    fontWeight: "700",
+    color: "white"
+  },
+  itemContainer: {
+    flex: 1,
+    marginVertical: 15,
+    marginHorizontal: 15,
+    borderRadius: 10
+  },
+  itemContent: {
+    flex: 1
+  },
+  itemDesription: {
+    flex: 1,
+    backgroundColor: "grey",
+    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  descriptionText: {
+    fontWeight: "700",
+    color: "white"
+  },
+  deleteContainer: {
+    backgroundColor: "red",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    position: "absolute",
+    right: -10,
+    top: -10
+  },
+  delete: {
+    fontWeight: "700",
+    color: "white"
   }
 });
+
+const months = [
+  { month: "January", color: "orange" },
+  { month: "February", color: "yellow" },
+  { month: "March", color: "blue" },
+  { month: "April", color: "orange" },
+  { month: "May", color: "yellow" },
+  { month: "June", color: "blue" },
+  { month: "July", color: "orange" },
+  { month: "August", color: "yellow" },
+  { month: "September", color: "blue" },
+  { month: "October", color: "orange" },
+  { month: "November", color: "yellow" },
+  { month: "December", color: "blue" }
+];
 
 class App extends Component {
   constructor() {
     super();
 
     this.state = {
-      elementsToShow: 3,
       activeBlock: null,
-      itemsPerRow: 5,
+      itemsPerRow: 3,
       itemHeight: 150,
-      data: [
-        { month: "January", color: "red" },
-        { month: "February", color: "green" },
-        { month: "March", color: "blue" },
-        { month: "April", color: "red" },
-        { month: "May", color: "green" },
-        { month: "June", color: "blue" },
-        { month: "July", color: "red" },
-        { month: "August", color: "green" },
-        { month: "September", color: "blue" },
-        { month: "October", color: "red" },
-        { month: "November", color: "green" },
-        { month: "December", color: "blue" }
-      ]
+      data: [months[0]]
     };
   }
 
   // MARK: - Handle events
 
-  onDragRelease(newOrder) {
-    this.reOrderDocuments(newOrder);
-    this.setState({ activeBlock: null });
+  onDragRelease(newData) {
+    this.setState({ activeBlock: null, data: newData });
   }
 
   onDragGrant(index) {
@@ -51,46 +109,54 @@ class App extends Component {
 
   // MARK: - Getters
 
-  get dataToRender() {
-    const { data, elementsToShow } = this.state;
+  get dataByKey() {
+    const { data } = this.state;
 
-    return data
-      .slice(0, elementsToShow)
-      .map((item, index) => this.renderItem(item, index));
+    return data.map(element => element.month);
   }
 
-  // MARK: - Helper methods
+  // MARK: - Helper method
 
-  reOrderDocuments() {}
+  addData() {
+    const notAddedMonths = months.filter(
+      month =>
+        typeof this.state.data.find(item => item.month === month.month) ===
+        "undefined"
+    );
+    if (notAddedMonths) {
+      const newData = this.state.data.concat([notAddedMonths[0]]);
+      this.setState({ data: newData });
+    }
+  }
+
+  deleteElement(item) {
+    const indexToRemove = this.dataByKey.indexOf(item.month);
+
+    const newData = this.state.data.slice();
+    newData.splice(indexToRemove, 1);
+
+    this.setState({ data: newData });
+  }
 
   // MARK: - Render elements
 
   renderItem(item) {
+    const backgroundColor = item.color;
+
     return (
       <View
-        style={{
-          flex: 1,
-          backgroundColor: item.color,
-          marginVertical: 5,
-          marginHorizontal: 5,
-          borderRadius: 10
-        }}
+        style={[styles.itemContainer, { backgroundColor }]}
         key={item.month}
       >
-        <View style={{ flex: 1 }} />
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "grey",
-            borderBottomRightRadius: 10,
-            borderBottomLeftRadius: 10,
-            justifyContent: "center",
-            alignItems: "center"
-          }}
+        <TouchableOpacity
+          style={styles.deleteContainer}
+          onPress={index => this.deleteElement(item)}
         >
-          <Text style={{ fontWeight: "700", color: "white" }}>
-            {item.month}
-          </Text>
+          <Text style={styles.delete}>-</Text>
+        </TouchableOpacity>
+        <View style={styles.itemContent} />
+        <View style={styles.itemDesription}>
+          <Text style={styles.descriptionText}>{item.month}</Text>
         </View>
       </View>
     );
@@ -99,48 +165,35 @@ class App extends Component {
   renderLastItem() {
     return (
       <TouchableOpacity
-        onPress={() =>
-          this.setState({ elementsToShow: this.state.elementsToShow + 1 })
-        }
-        style={{
-          flex: 1,
-          marginVertical: 10,
-          marginHorizontal: 10,
-          borderRadius: 10,
-          justifyContent: "center",
-          alignItems: "center"
-        }}
+        onPress={() => this.addData()}
+        style={styles.lastItemContainer}
       >
-        <View style={{ backgroundColor: "red", borderRadius: 10 }}>
-          <Text
-            style={{
-              padding: 10,
-              fontWeight: "700",
-              color: "white",
-              fontSize: 20
-            }}
-          >
-            +
-          </Text>
+        <View style={styles.wrapAdd}>
+          <Text style={styles.add}>+</Text>
         </View>
       </TouchableOpacity>
     );
   }
 
   render() {
-    const { activeBlock, itemHeight, itemsPerRow } = this.state;
+    const { data, activeBlock, itemHeight, itemsPerRow } = this.state;
+    const lastItem =
+      data.length === months.length ? undefined : this.renderLastItem();
 
     return (
       <View style={styles.container}>
         <Text style={styles.text}>{`The active block is: ${activeBlock}`}</Text>
         <DraggableGridView
-          onDragRelease={newOrder => this.onDragRelease(newOrder)}
+          onDragRelease={newData => this.onDragRelease(newData)}
           onDragGrant={index => this.onDragGrant(index)}
-          lastItem={this.renderLastItem()}
+          lastItem={lastItem}
           itemHeight={itemHeight}
           itemsPerRow={itemsPerRow}
-          data={this.dataToRender}
+          data={data}
+          keyField="month"
+          renderItem={item => this.renderItem(item)}
         />
+        <Text>{JSON.stringify(this.dataByKey)}</Text>
       </View>
     );
   }

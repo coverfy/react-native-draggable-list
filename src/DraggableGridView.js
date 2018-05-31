@@ -50,11 +50,12 @@ class DraggableGridView extends Component {
 
   onDragRelease() {
     this.setState({ activeBlock: null });
-    const newOrder = Object.keys(this.blockLayers).map(
+    const newLayerOrder = Object.keys(this.blockLayers).map(
       layerKey => this.blockLayers[layerKey]
     );
 
-    this.props.onDragRelease(newOrder);
+    const dataReOrdered = this.reOrderData(newLayerOrder);
+    this.props.onDragRelease(dataReOrdered);
   }
 
   // MARK: - Getters
@@ -66,7 +67,9 @@ class DraggableGridView extends Component {
       lastItem.key = "lastItem";
     }
 
-    return lastItem ? data.concat([lastItem]) : data;
+    return lastItem
+      ? data.map(item => this.props.renderItem(item)).concat([lastItem])
+      : data.map(item => this.props.renderItem(item));
   }
 
   get itemsLength() {
@@ -91,6 +94,22 @@ class DraggableGridView extends Component {
   }
 
   // MARK: - Helper methods
+
+  reOrderData(newLayerOrder) {
+    const { keyField } = this.props;
+    const dataReOrdered = [];
+
+    newLayerOrder.forEach(newLayer => {
+      const key = newLayer.key;
+      const element = this.props.data.filter(data => data[keyField] === key)[0];
+
+      if (element) {
+        dataReOrdered.push(element);
+      }
+    });
+
+    return dataReOrdered;
+  }
 
   findClosestBlockLayerFrom(current) {
     let closest = { x: SCREEN_WIDTH, y: SCREEN_WIDTH };
@@ -237,12 +256,14 @@ class DraggableGridView extends Component {
 
 DraggableGridView.defaultProps = {
   lastItem: undefined,
+  keyField: "key",
   onDragRelease: () => {},
   onDragGrant: () => {}
 };
 
 DraggableGridView.propTypes = {
   data: PropTypes.array.isRequired,
+  keyField: PropTypes.string,
   onDragRelease: PropTypes.func,
   onDragGrant: PropTypes.func,
   itemsPerRow: PropTypes.number.isRequired,
