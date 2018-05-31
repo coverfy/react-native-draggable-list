@@ -1,0 +1,9 @@
+{
+  "name": "react-native-draggable-grid",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/josepbordesjove/RN-draggable-grid.git",
+  "author": "Josep Bordes <josep.bordes@coverfy.com>",
+  "license": "MIT",
+  "private": false
+}
