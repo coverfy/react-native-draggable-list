@@ -1,6 +1,15 @@
 import React, { Component } from "react";
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Image,
+  SafeAreaView
+} from "react-native";
 import DraggableGridView from "react-native-draggable-grid";
+
+import { ALL_DATA } from "../assets/data/consoles.js";
 
 const styles = StyleSheet.create({
   container: {
@@ -21,7 +30,7 @@ const styles = StyleSheet.create({
   wrapAdd: {
     width: 50,
     height: 50,
-    backgroundColor: "green",
+    backgroundColor: "#4F9D69",
     marginVertical: 10,
     marginHorizontal: 10,
     borderRadius: 10,
@@ -39,10 +48,12 @@ const styles = StyleSheet.create({
     borderRadius: 10
   },
   itemContent: {
-    flex: 1
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center"
   },
   itemDesription: {
-    flex: 1,
+    flex: 0.3,
     backgroundColor: "grey",
     borderBottomRightRadius: 10,
     borderBottomLeftRadius: 10,
@@ -54,7 +65,7 @@ const styles = StyleSheet.create({
     color: "white"
   },
   deleteContainer: {
-    backgroundColor: "red",
+    backgroundColor: "#EF476F",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 10,
@@ -65,25 +76,16 @@ const styles = StyleSheet.create({
     top: -10
   },
   delete: {
-    fontWeight: "700",
+    fontWeight: "800",
+    fontSize: 18,
+    height: 25,
     color: "white"
+  },
+  image: {
+    width: 50,
+    height: 50
   }
 });
-
-const months = [
-  { month: "January", color: "orange" },
-  { month: "February", color: "yellow" },
-  { month: "March", color: "blue" },
-  { month: "April", color: "orange" },
-  { month: "May", color: "yellow" },
-  { month: "June", color: "blue" },
-  { month: "July", color: "orange" },
-  { month: "August", color: "yellow" },
-  { month: "September", color: "blue" },
-  { month: "October", color: "orange" },
-  { month: "November", color: "yellow" },
-  { month: "December", color: "blue" }
-];
 
 class App extends Component {
   constructor() {
@@ -93,7 +95,7 @@ class App extends Component {
       activeBlock: null,
       itemsPerRow: 3,
       itemHeight: 150,
-      data: [months[0]]
+      data: [ALL_DATA[0]]
     };
   }
 
@@ -112,25 +114,25 @@ class App extends Component {
   get dataByKey() {
     const { data } = this.state;
 
-    return data.map(element => element.month);
+    return data.map(element => element.name);
   }
 
   // MARK: - Helper method
 
   addData() {
-    const notAddedMonths = months.filter(
-      month =>
-        typeof this.state.data.find(item => item.month === month.month) ===
+    const notAddedData = ALL_DATA.filter(
+      data =>
+        typeof this.state.data.find(item => item.name === data.name) ===
         "undefined"
     );
-    if (notAddedMonths) {
-      const newData = this.state.data.concat([notAddedMonths[0]]);
+    if (notAddedData) {
+      const newData = this.state.data.concat([notAddedData[0]]);
       this.setState({ data: newData });
     }
   }
 
   deleteElement(item) {
-    const indexToRemove = this.dataByKey.indexOf(item.month);
+    const indexToRemove = this.dataByKey.indexOf(item.name);
 
     const newData = this.state.data.slice();
     newData.splice(indexToRemove, 1);
@@ -144,19 +146,22 @@ class App extends Component {
     const backgroundColor = item.color;
 
     return (
-      <View
-        style={[styles.itemContainer, { backgroundColor }]}
-        key={item.month}
-      >
+      <View style={[styles.itemContainer, { backgroundColor }]} key={item.name}>
         <TouchableOpacity
           style={styles.deleteContainer}
           onPress={index => this.deleteElement(item)}
         >
           <Text style={styles.delete}>-</Text>
         </TouchableOpacity>
-        <View style={styles.itemContent} />
+        <View style={styles.itemContent}>
+          <Image
+            style={styles.image}
+            resizeMode="contain"
+            source={item.image}
+          />
+        </View>
         <View style={styles.itemDesription}>
-          <Text style={styles.descriptionText}>{item.month}</Text>
+          <Text style={styles.descriptionText}>{item.name}</Text>
         </View>
       </View>
     );
@@ -178,10 +183,10 @@ class App extends Component {
   render() {
     const { data, activeBlock, itemHeight, itemsPerRow } = this.state;
     const lastItem =
-      data.length === months.length ? undefined : this.renderLastItem();
+      data.length === ALL_DATA.length ? undefined : this.renderLastItem();
 
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <Text style={styles.text}>{`The active block is: ${activeBlock}`}</Text>
         <DraggableGridView
           onDragRelease={newData => this.onDragRelease(newData)}
@@ -190,11 +195,11 @@ class App extends Component {
           itemHeight={itemHeight}
           itemsPerRow={itemsPerRow}
           data={data}
-          keyField="month"
+          keyField="name"
           renderItem={item => this.renderItem(item)}
         />
         <Text>{JSON.stringify(this.dataByKey)}</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 }
