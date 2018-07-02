@@ -86,7 +86,7 @@ class App extends Component {
 
     this.state = {
       activeBlock: null,
-      itemsPerRow: 3,
+      itemsPerRow: 1,
       itemHeight: 150,
       data: [ALL_DATA[0]],
     };
