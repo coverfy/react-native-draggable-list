@@ -9,9 +9,9 @@
   },
   "dependencies": {
     "prop-types": "^15.6.0",
-    "react": "16.3.1",
+    "react": "16.4.1",
     "react-native": "0.55.4",
-    "react-native-draggable-grid": "../"
+    "react-native-draggable-list": "../"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",

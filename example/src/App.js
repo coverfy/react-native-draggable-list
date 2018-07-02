@@ -1,90 +1,83 @@
-import React, { Component } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  Image,
-  SafeAreaView
-} from "react-native";
-import DraggableGridView from "react-native-draggable-grid";
+import React, { Component } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Image, SafeAreaView } from 'react-native';
+import DraggableList from 'react-native-draggable-list';
 
-import { ALL_DATA } from "../assets/data/consoles.js";
+import { ALL_DATA } from '../assets/data/consoles';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff"
+    backgroundColor: '#fff',
   },
   text: {
-    marginTop: 30
+    marginTop: 30,
   },
   lastItemContainer: {
     flex: 1,
     marginVertical: 10,
     marginHorizontal: 10,
     borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center"
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   wrapAdd: {
     width: 50,
     height: 50,
-    backgroundColor: "#4F9D69",
+    backgroundColor: '#4F9D69',
     marginVertical: 10,
     marginHorizontal: 10,
     borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center"
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   add: {
-    fontWeight: "700",
-    color: "white"
+    fontWeight: '700',
+    color: 'white',
   },
   itemContainer: {
     flex: 1,
     marginVertical: 15,
     marginHorizontal: 15,
-    borderRadius: 10
+    borderRadius: 10,
   },
   itemContent: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center"
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   itemDesription: {
     flex: 0.3,
-    backgroundColor: "grey",
+    backgroundColor: 'grey',
     borderBottomRightRadius: 10,
     borderBottomLeftRadius: 10,
-    justifyContent: "center",
-    alignItems: "center"
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   descriptionText: {
-    fontWeight: "700",
-    color: "white"
+    fontWeight: '700',
+    color: 'white',
   },
   deleteContainer: {
-    backgroundColor: "#EF476F",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#EF476F',
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: 10,
     width: 20,
     height: 20,
-    position: "absolute",
+    position: 'absolute',
     right: -10,
-    top: -10
+    top: -10,
   },
   delete: {
-    fontWeight: "800",
+    fontWeight: '800',
     fontSize: 18,
     height: 25,
-    color: "white"
+    color: 'white',
   },
   image: {
     width: 50,
-    height: 50
-  }
+    height: 50,
+  },
 });
 
 class App extends Component {
@@ -95,7 +88,7 @@ class App extends Component {
       activeBlock: null,
       itemsPerRow: 3,
       itemHeight: 150,
-      data: [ALL_DATA[0]]
+      data: [ALL_DATA[0]],
     };
   }
 
@@ -103,6 +96,10 @@ class App extends Component {
 
   onDragRelease(newData) {
     this.setState({ activeBlock: null, data: newData });
+  }
+
+  onDragMove(newData) {
+    this.setState({ data: newData });
   }
 
   onDragGrant(index) {
@@ -121,9 +118,7 @@ class App extends Component {
 
   addData() {
     const notAddedData = ALL_DATA.filter(
-      data =>
-        typeof this.state.data.find(item => item.name === data.name) ===
-        "undefined"
+      data => typeof this.state.data.find(item => item.name === data.name) === 'undefined',
     );
     if (notAddedData) {
       const newData = this.state.data.concat([notAddedData[0]]);
@@ -147,18 +142,11 @@ class App extends Component {
 
     return (
       <View style={[styles.itemContainer, { backgroundColor }]} key={item.name}>
-        <TouchableOpacity
-          style={styles.deleteContainer}
-          onPress={index => this.deleteElement(item)}
-        >
+        <TouchableOpacity style={styles.deleteContainer} onPress={() => this.deleteElement(item)}>
           <Text style={styles.delete}>-</Text>
         </TouchableOpacity>
         <View style={styles.itemContent}>
-          <Image
-            style={styles.image}
-            resizeMode="contain"
-            source={item.image}
-          />
+          <Image style={styles.image} resizeMode="contain" source={item.image} />
         </View>
         <View style={styles.itemDesription}>
           <Text style={styles.descriptionText}>{item.name}</Text>
@@ -169,10 +157,7 @@ class App extends Component {
 
   renderLastItem() {
     return (
-      <TouchableOpacity
-        onPress={() => this.addData()}
-        style={styles.lastItemContainer}
-      >
+      <TouchableOpacity onPress={() => this.addData()} style={styles.lastItemContainer}>
         <View style={styles.wrapAdd}>
           <Text style={styles.add}>+</Text>
         </View>
@@ -181,15 +166,17 @@ class App extends Component {
   }
 
   render() {
-    const { data, activeBlock, itemHeight, itemsPerRow } = this.state;
-    const lastItem =
-      data.length === ALL_DATA.length ? undefined : this.renderLastItem();
+    const {
+      data, activeBlock, itemHeight, itemsPerRow,
+    } = this.state;
+    const lastItem = data.length === ALL_DATA.length ? undefined : this.renderLastItem();
 
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.text}>{`The active block is: ${activeBlock}`}</Text>
-        <DraggableGridView
+        <DraggableList
           onDragRelease={newData => this.onDragRelease(newData)}
+          onDragMove={newData => this.onDragMove(newData)}
           onDragGrant={index => this.onDragGrant(index)}
           lastItem={lastItem}
           itemHeight={itemHeight}

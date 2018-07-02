@@ -1,61 +1,48 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
-import { StyleSheet, ScrollView, View, Dimensions } from "react-native";
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { StyleSheet, ScrollView, View, Dimensions } from 'react-native';
 
-import Block from "./Block";
+import Block from './Block';
 
 const styles = StyleSheet.create({
   itemsList: {
-    flex: 1
-  }
+    flex: 1,
+  },
 });
 
-const SCREEN_WIDTH = Dimensions.get("window").width;
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 class DraggableGridView extends Component {
   constructor(props) {
     super(props);
 
-    this.blockLayers = {};
-
     this.state = {
+      blockLayersArray: [],
       isAnyBlockMoving: false,
-      activeBlock: null
+      activeBlock: null,
+      activeBlockIndex: -1,
     };
-  }
-
-  shouldComponentUpdate(nextProps) {
-    if (this.props.data.length !== nextProps.data.length) {
-      this.blockLayers = {};
-    }
-
-    return true;
   }
 
   // MARK: - Event handlers
 
-  onDragGrant(blockKey) {
-    this.setState({ activeBlock: blockKey });
+  onDragGrant(blockKey, index) {
+    this.setState({ activeBlock: blockKey, activeBlockIndex: index });
     this.props.onDragGrant(blockKey);
   }
 
   onDragMove(x, y, dx, dy) {
     const currentPosition = { x: x + dx, y: y + dy };
-    const closest = this.findClosestBlockLayerFrom(currentPosition);
+    const closestBlockInfo = this.findClosestBlockLayerFrom(currentPosition);
 
-    if (!this.state.isAnyBlockMoving && Object.keys(closest).length > 0) {
-      this.reOrganizeBlockGrid(closest);
+    if (!this.state.isAnyBlockMoving && Object.keys(closestBlockInfo.closest).length > 0) {
+      this.reOrganizeBlockGrid(closestBlockInfo);
     }
   }
 
   onDragRelease() {
-    this.setState({ activeBlock: null });
-    const newLayerOrder = Object.keys(this.blockLayers).map(
-      layerKey => this.blockLayers[layerKey]
-    );
-
-    const dataReOrdered = this.reOrderData(newLayerOrder);
-    this.props.onDragRelease(dataReOrdered);
+    this.setState({ activeBlock: null, activeBlockIndex: -1 });
+    this.props.onDragRelease(this.reOrderData());
   }
 
   // MARK: - Getters
@@ -64,7 +51,7 @@ class DraggableGridView extends Component {
     const { data, lastItem } = this.props;
 
     if (lastItem) {
-      lastItem.key = "lastItem";
+      lastItem.key = 'lastItem';
     }
 
     return lastItem
@@ -73,13 +60,14 @@ class DraggableGridView extends Component {
   }
 
   get itemsLength() {
-    return this.items.length;
+    const { data, lastItem } = this.props;
+
+    return lastItem ? data.length : data.length;
   }
 
   get wrapperStyle() {
     const { itemsPerRow, itemHeight } = this.props;
-    const height =
-      (Math.round(this.itemsLength / itemsPerRow) + 1) * itemHeight;
+    const height = (Math.round(this.itemsLength / itemsPerRow) + 1) * itemHeight;
 
     return { height };
   }
@@ -89,18 +77,17 @@ class DraggableGridView extends Component {
   }
 
   get activeBlockLayer() {
-    const currentBlockOrder = this.orderFor(this.state.activeBlock);
-    return Object.assign({}, this.blockLayers[currentBlockOrder]);
+    return this.state.blockLayersArray[this.state.activeBlock];
   }
 
   // MARK: - Helper methods
 
-  reOrderData(newLayerOrder) {
+  reOrderData() {
     const { keyField } = this.props;
     const dataReOrdered = [];
 
-    newLayerOrder.forEach(newLayer => {
-      const key = newLayer.key;
+    this.state.blockLayersArray.forEach((newLayer) => {
+      const { key } = newLayer;
       const element = this.props.data.filter(data => data[keyField] === key)[0];
 
       if (element) {
@@ -113,23 +100,20 @@ class DraggableGridView extends Component {
 
   findClosestBlockLayerFrom(current) {
     let closest = { x: SCREEN_WIDTH, y: SCREEN_WIDTH };
+    let closestIndex = -1;
 
-    Object.keys(this.blockLayers).forEach(blockPositionKey => {
-      const blockPosition = this.blockLayers[blockPositionKey];
-
-      if (
-        this.distanceBetween(current, blockPosition) <
-        SCREEN_WIDTH / this.props.itemsPerRow
-      ) {
+    this.state.blockLayersArray.forEach((blockPosition, index) => {
+      if (this.distanceBetween(current, blockPosition) < SCREEN_WIDTH / this.props.itemsPerRow) {
         closest = blockPosition;
+        closestIndex = index;
       }
     });
 
     if (this.props.lastItem && closest.key === this.itemsLength - 1) {
-      return this.blockLayers[closest.key - 1];
+      return this.state.blockLayersArray[closest.key - 1];
     }
 
-    return closest;
+    return { closest, closestIndex };
   }
 
   generateKeyForItem(itemIndex) {
@@ -154,11 +138,13 @@ class DraggableGridView extends Component {
       x: itemWidth * column,
       y: itemHeight * row,
       width: itemWidth,
-      height: itemHeight
+      height: itemHeight,
     };
 
-    if (typeof this.blockLayers[index] === "undefined") {
-      this.blockLayers[index] = blockPosition;
+    if (typeof this.state.blockLayersArray[index] !== 'undefined') {
+      this.state.blockLayersArray[index] = blockPosition;
+    } else {
+      this.state.blockLayersArray.push(blockPosition);
     }
   }
 
@@ -172,45 +158,38 @@ class DraggableGridView extends Component {
     return Math.sqrt(xDistanceSquare + yDistanceSquare);
   }
 
-  reOrganizeBlockGrid(closest) {
-    const currentKey = this.state.activeBlock;
-    const nextKey = closest.key;
+  reOrganizeBlockGrid(closestBlockInfo) {
+    const { activeBlockIndex } = this.state;
+    const nextBlockIndex = closestBlockInfo.closestIndex;
 
-    if (nextKey === currentKey) {
+    if (
+      !this.state.blockLayersArray[activeBlockIndex] ||
+      !this.state.blockLayersArray[nextBlockIndex] ||
+      activeBlockIndex === nextBlockIndex
+    ) {
       return;
     }
 
-    const currentBlockOrder = this.orderFor(currentKey);
-    const nextBlockOrder = this.orderFor(nextKey);
+    const nextBlockKey = this.state.blockLayersArray[nextBlockIndex].key;
+    const currentBlockKey = this.state.blockLayersArray[activeBlockIndex].key;
 
-    if (
-      currentBlockOrder !== -1 &&
-      nextBlockOrder !== -1 &&
-      nextKey !== this.props.lastItem.key
-    ) {
-      this.blockLayers[currentBlockOrder] = Object.assign(
-        this.blockLayers[currentBlockOrder],
-        {
-          key: nextKey
-        }
-      );
-      this.blockLayers[nextBlockOrder] = Object.assign(
-        this.blockLayers[nextBlockOrder],
-        {
-          key: currentKey
-        }
-      );
-      this.forceUpdate();
+    if (!nextBlockKey) {
+      return;
     }
+
+    this.state.blockLayersArray[activeBlockIndex].key = nextBlockKey;
+    this.state.blockLayersArray[nextBlockIndex].key = currentBlockKey;
+
+    this.props.onDragMove(this.reOrderData());
   }
 
   orderFor(key) {
     let order = -1;
 
-    Object.keys(this.blockLayers).forEach(layerOrder => {
-      const layerKey = this.blockLayers[layerOrder].key;
+    this.state.blockLayersArray.forEach((layer, index) => {
+      const layerKey = this.state.blockLayersArray[index].key;
       if (key === layerKey) {
-        order = layerOrder;
+        order = index;
       }
     });
 
@@ -229,13 +208,12 @@ class DraggableGridView extends Component {
 
       return (
         <Block
-          onDragGrant={blockKey => this.onDragGrant(blockKey)}
+          onDragGrant={blockKey => this.onDragGrant(blockKey, index)}
           onDragMove={(x, y, dx, dy) => this.onDragMove(x, y, dx, dy)}
           onDragRelease={() => this.onDragRelease()}
           isBlockMoving={isMoving => this.isBlockMoving(isMoving)}
           key={item.key}
-          layer={this.blockLayers[this.orderFor(item.key)]}
-          order={index}
+          layer={this.state.blockLayersArray[index]}
         >
           {item}
         </Block>
@@ -255,20 +233,19 @@ class DraggableGridView extends Component {
 }
 
 DraggableGridView.defaultProps = {
-  lastItem: undefined,
-  keyField: "key",
-  onDragRelease: () => {},
-  onDragGrant: () => {}
+  keyField: 'key',
 };
 
 DraggableGridView.propTypes = {
+  renderItem: PropTypes.func.isRequired,
   data: PropTypes.array.isRequired,
   keyField: PropTypes.string,
   onDragRelease: PropTypes.func,
+  onDragMove: PropTypes.func,
   onDragGrant: PropTypes.func,
   itemsPerRow: PropTypes.number.isRequired,
   itemHeight: PropTypes.number.isRequired,
-  lastItem: PropTypes.object
+  lastItem: PropTypes.object,
 };
 
 export default DraggableGridView;

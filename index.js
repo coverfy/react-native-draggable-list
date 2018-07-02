@@ -1,3 +1,3 @@
-import DraggableGridView from './src/DraggableGridView';
+import DraggableGridView from "./src/DraggableList";
 
 export default DraggableGridView;

@@ -1,15 +1,15 @@
-import React, { Component } from "react";
-import { Platform, Animated, PanResponder, StyleSheet } from "react-native";
-import PropTypes from "prop-types";
+import React, { Component } from 'react';
+import { Platform, Animated, PanResponder, StyleSheet } from 'react-native';
+import PropTypes from 'prop-types';
 
 const styles = StyleSheet.create({
   active: {
-    shadowOffset: Platform.OS === "ios" ? { width: 0, height: 2 } : undefined,
-    shadowColor: Platform.OS === "ios" ? "black" : undefined,
-    shadowOpacity: Platform.OS === "ios" ? 0.4 : undefined,
-    shadowRadius: Platform.OS === "ios" ? 3 : undefined,
+    shadowOffset: Platform.OS === 'ios' ? { width: 0, height: 2 } : undefined,
+    shadowColor: Platform.OS === 'ios' ? 'black' : undefined,
+    shadowOpacity: Platform.OS === 'ios' ? 0.4 : undefined,
+    shadowRadius: Platform.OS === 'ios' ? 3 : undefined,
     elevation: 4,
-    zIndex: 80
+    zIndex: 80,
   },
   inactive: {
     shadowOffset: undefined,
@@ -17,22 +17,24 @@ const styles = StyleSheet.create({
     shadowOpacity: undefined,
     shadowRadius: undefined,
     elevation: 0,
-    zIndex: 1
-  }
+    zIndex: 1,
+  },
 });
 
 class Block extends Component {
   constructor(props) {
     super(props);
 
-    const { x, y, width, height } = props.layer;
+    const {
+      x, y, width, height,
+    } = props.layer;
 
     this.state = {
       isActive: false,
       pan: new Animated.ValueXY({ x: 0, y: 0 }),
       originalPosition: { x, y },
       position: new Animated.ValueXY({ x, y }),
-      size: { height, width }
+      size: { height, width },
     };
 
     this.initPanGestureRecognizer();
@@ -41,10 +43,7 @@ class Block extends Component {
   componentDidUpdate(prevProps) {
     const { isActive } = this.state;
 
-    if (
-      !isActive &&
-      this.itemHasChangedPosition(this.props.layer, prevProps.layer)
-    ) {
+    if (!isActive && this.itemHasChangedPosition(this.props.layer, prevProps.layer)) {
       this.moveToPosition({ x: this.props.layer.x, y: this.props.layer.y });
     }
   }
@@ -84,11 +83,11 @@ class Block extends Component {
     const panStyle = { transform: this.state.pan.getTranslateTransform() };
 
     const blockStyle = {
-      position: "absolute",
+      position: 'absolute',
       left: position.x,
       top: position.y,
       width: size.width,
-      height: size.height
+      height: size.height,
     };
 
     return isActive
@@ -100,7 +99,7 @@ class Block extends Component {
 
   initPanGestureRecognizer() {
     this.val = { x: 0, y: 0 };
-    this.state.pan.addListener(value => {
+    this.state.pan.addListener((value) => {
       this.val = value;
     });
 
@@ -108,7 +107,7 @@ class Block extends Component {
       onStartShouldSetPanResponder: () => true,
       onPanResponderMove: (e, gestureState) => this.onDragMove(e, gestureState),
       onPanResponderRelease: () => this.onDragRelease(),
-      onPanResponderGrant: () => this.onDragGrant()
+      onPanResponderGrant: () => this.onDragGrant(),
     });
   }
 
@@ -119,13 +118,13 @@ class Block extends Component {
     Animated.parallel([
       Animated.spring(this.state.position, {
         toValue: newPosition,
-        friction: 15
+        friction: 15,
       }),
       Animated.spring(this.state.pan, {
         toValue: { x: 0, y: 0 },
-        friction: 15
-      })
-    ]).start(event => {
+        friction: 15,
+      }),
+    ]).start((event) => {
       if (event.finished) {
         this.props.isBlockMoving(false);
       }
@@ -133,10 +132,7 @@ class Block extends Component {
   }
 
   itemHasChangedPosition(nextLayer, previousLayer) {
-    if (
-      typeof nextLayer === "undefined" ||
-      typeof previousLayer === "undefined"
-    ) {
+    if (typeof nextLayer === 'undefined' || typeof previousLayer === 'undefined') {
       return false;
     }
 
@@ -159,11 +155,7 @@ class Block extends Component {
     const { children } = this.props;
 
     return (
-      <Animated.View
-        useNativeDriver
-        {...this.panResponder.panHandlers}
-        style={this.itemStyle}
-      >
+      <Animated.View useNativeDriver {...this.panResponder.panHandlers} style={this.itemStyle}>
         {children}
       </Animated.View>
     );
@@ -171,13 +163,12 @@ class Block extends Component {
 }
 
 Block.propTypes = {
-  order: PropTypes.number.isRequired,
   onDragGrant: PropTypes.func.isRequired,
   onDragMove: PropTypes.func.isRequired,
   onDragRelease: PropTypes.func.isRequired,
   layer: PropTypes.object.isRequired,
   children: PropTypes.object.isRequired,
-  isBlockMoving: PropTypes.func.isRequired
+  isBlockMoving: PropTypes.func.isRequired,
 };
 
 export default Block;
