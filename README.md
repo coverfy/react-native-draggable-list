@@ -77,3 +77,15 @@ class App extends Component {
   }
 }
 ```
+
+## SortableGrid properties
+
+- `renderItem` **Function**
+- `data` **Array**
+- `keyField` **String**
+- `onDragRelease` **Function**
+- `onDragMove` **Function**
+- `onDragGrant` **Function**
+- `itemsPerRow` **Number**
+- `itemHeight` **Number**
+- `Object` **Number**
