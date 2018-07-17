@@ -1,5 +1,6 @@
 {
   "name": "@coverfy/react-native-draggable-list",
+  "description": "This is a React Native drag and drop project which is capable to have a fixed last element",
   "version": "0.1.0",
   "main": "index.js",
   "repository": "https://github.com/josepbordesjove/RN-draggable-grid.git",
