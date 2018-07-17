@@ -1,8 +1,15 @@
-![Alt Text](https://media.giphy.com/media/8w9krdoqJaMQlWjvkr/giphy.gif)
-
 # react-native-draggable-list
 
 This is a React Native drag and drop project which is capable to have a fixed last element
+
+<img src="https://media.giphy.com/media/8w9krdoqJaMQlWjvkr/giphy.gif" width="300">
+
+## Installation
+
+```
+yarn add react-native-draggable-list
+import DraggableList from 'react-native-draggable-list';
+```
 
 ## Usage
 
