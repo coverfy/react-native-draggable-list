@@ -7,14 +7,13 @@ This is a React Native drag and drop project which is capable to have a fixed la
 ## Installation
 
 ```
-yarn add react-native-draggable-list
-import DraggableList from 'react-native-draggable-list';
+yarn add @coverfy/react-native-draggable-list
 ```
 
 ## Usage
 
 ```
-import DraggableList from 'react-native-draggable-list';
+import DraggableList from '@coverfy/react-native-draggable-list';
 
 ...
 
