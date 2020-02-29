@@ -67,7 +67,7 @@ class DraggableGridView extends Component {
 
   get wrapperStyle() {
     const { itemsPerRow, itemHeight } = this.props;
-    const height = (Math.round(this.itemsLength / itemsPerRow) + 1) * itemHeight;
+    const height = (Math.floor(this.itemsLength / itemsPerRow) + 1) * itemHeight;
 
     return { height };
   }
